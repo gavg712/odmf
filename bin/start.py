@@ -24,8 +24,7 @@ import odmf
 
 print('odmf=', odmf.__version__)
 
-HOME = Path(__file__).parent
-config_file = HOME / 'config.yml'
+config_file = Path('config.yml').absolute()
 
 
 def get_config():
@@ -37,13 +36,14 @@ def get_config():
     conf.to_yaml(config_file.open('w', encoding='UTF-8'))
     return conf
 
+
 def wait_for_db(conf, wait_time=20):
     import time
     from sqlalchemy import create_engine
-    start = time.time()
+    tstart = time.time()
     i = 0
     exc = None
-    while time.time() - start < wait_time:
+    while time.time() - tstart < wait_time:
         try:
             time.sleep(0.25)
             engine = create_engine(conf.database_url, encoding='utf-8')
@@ -59,7 +59,8 @@ def wait_for_db(conf, wait_time=20):
         sys.stderr.write(f'Error: {exc}\n')
         exit(100)
 
-def make_db(conf):
+
+def make_db():
     """
     Creates in the database: all tables, a user odmf.admin
     and fills the data-quality table with some usable input
@@ -79,10 +80,10 @@ def start():
     server.start()
 
 
-conf = get_config()
-print('Connect to:', conf.database_url)
-wait_for_db(conf, 10)
+config = get_config()
+print('Connect to:', config.database_url)
+wait_for_db(config, 10)
 print('Create DB schema')
-make_db(conf)
+make_db(config)
 print('Start Server')
 start()
